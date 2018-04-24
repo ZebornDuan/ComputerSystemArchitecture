@@ -1,0 +1,139 @@
+How to Use the Cache Replacement Competition Kit
+Setting Up the Simulation Infrastructure:
+
+1. Subscribe to the replacement competition mailing list by sending an empty email to crc-1-subscribe AT yahoogroups.com. You do not need to have a Yahoo email account - you only need to subscribe to the mailing list. When prompted, type in a dummy message to the moderator.
+
+This mailing list will be used for any announcments regarding the competition, any simulation infrastructure updates, and participants may post questions or report problems.
+
+2. Download the replacement competition kit file from here and save it in your home directory.
+
+3. unpack the kit:
+
+ 	tar -xzvf CRC_DISTRIB.tgz
+
+cd CRC
+
+4. Set the variable 'PIN_DIR' in pinkit/CONFIG/makefile.gnu.config to the absolute path for pinkit/pin-2.7-31933-gcc.3.4.6-ia32_intel64-linux/ in the kit. When you edit the makefile.gnu.config file, modify the fourth line to:
+
+	PIN_DIR ?= $FULL_PATH_TO_CRC_KIT/CRC/pinkit/pin-2.7-31933-gcc.3.4.6-ia32_intel64-linux
+
+5.Edit Makefile.competition and modify the fifth line `default: CMPsim32' depending whether you are on a 32-bit (IA-32, i686) or a 64-bit (x86_64) system. To get that configuration, type "uname -a" in Linux.
+
+    * For 32-bit machines, modify to:
+
+      	default: CMPsim32
+
+    * For 64-bit machines, modify to:
+
+      	default: CMPsim64
+
+6. To compile the simulator, make sure you are in the CRC/ directory and that your gcc compiler path is set up correctly, then type:
+
+	make
+
+OR you can specify what target to make depeding on whether you have a 32-bit machine or a 64-bit machine. For 32-bit machines, type:
+
+	make CMPsim32
+
+and for 64-bit machines, type:
+
+	make CMPsim64
+
+Generating Traces to Simulate:
+
+To generate a trace for any single-threaded application, do the following (from the CRC/ directory):
+
+	mkdir traces
+
+pinkit/pin-2.7-31933-gcc.3.4.6-ia32_intel64-linux/pin -t ./bin/CMPsim.gentrace.32 -threads 1 -fwd [fast forward instructions in millions] -icount [traced instructions in millions] -o traces/[outputfile] -- [application] [application args]
+
+OR for 64-bit machines:
+
+	pinkit/pin-2.7-31933-gcc.3.4.6-ia32_intel64-linux/pin -t ./bin/CMPsim.gentrace.64 -threads 1 -fwd [fast forward instructions in millions] -icount [traced instructions in millions] -o [outputfile] -- [application] [application args]
+
+Example:
+
+	pinkit/pin-2.7-31933-gcc.3.4.6-ia32_intel64-linux/pin -t ./bin/CMPsim.gentrace.64 -threads 1 -o traces/ls.out -- /bin/ls
+
+OR:
+
+pinkit/pin-2.7-31933-gcc.3.4.6-ia32_intel64-linux/pin -t ./bin/CMPsim.gentrace.64 -threads 1 -o traces/cat.out -- cat README
+
+Output of Trace Generator (from the first example above):
+
+    * ls.out.gz: summary of instructions traced
+    * ls.out.trace.gz: binary of the trace file collected
+    * ls.out.dep.gz: ASCII representation of the instruction dependency information for out-or-order simulation 
+
+To collect traces for a snippet of an application, use the -fwd and -icount options to the pin tool.
+
+	-fwd :   e.g. -fwd 100 will fast-forward 100 million instructions (note: arg is in millions)
+
+-icount : e.g. -icount 10 will trace 10 million instructions of the application
+
+For example, to generate a trace of "ls -al" that fast-forwards for 1 million instructions and traces another 1 million instructions:
+
+	pinkit/pin-2.7-31933-gcc.3.4.6-ia32_intel64-linux/pin -t ./bin/CMPsim.gentrace.64 -threads 1 -fwd 1 -icount 1 -o traces/lsal.out -- /bin/ls -al
+
+(Hint: When evaluating the replacement techniques, the organizers will use an undistributed trace list. A significant part of that trace list will be based on SPEC2006 benchmarks. When generating these traces, you should warm them up for 40 billion instructions and generate a trace for 100 million instructions, i.e., -fwd 40000 -icount 100)
+
+Generating Multi-Program Traces:
+
+To run 4-core traces, you need to get single-threaded traces first. To construct a multiprogram trace for the 4-core configuration, you need to create a text file containing the full path for four such single threaded traces. For example, the following file contains two ls traces and two cat traces:
+
+	cat > traces/mix_ls_cat.mix
+
+YOUR_HOME_DIR/CRC/traces/ls.out.trace.gz
+
+YOUR_HOME_DIR/CRC/traces/cat.out.trace.gz
+
+YOUR_HOME_DIR/CRC/traces/ls.out.trace.gz
+
+YOUR_HOME_DIR/CRC/traces/cat.out.trace.gz
+
+CTRL-D
+
+Running the Simulator:
+
+To run the simulator on the generated trace, do the following (from the CRC/ directory):
+
+	mkdir runs
+
+cd runs/
+
+The command format is:
+
+	../bin/CMPsim.usetrace.32 -threads [# threads] (-t [trace file name] | -mix [trace mix file name]) -icount [number of instructions in millions] -o [output file name] -cache [cache configuration] -LLCrepl [Replacement policy number]
+
+OR for 64-bit machines:
+
+	../bin/CMPsim.usetrace.64 -threads [# threads] (-t [trace file name] | -mix [trace mix file name]) -icount [number of instructions in millions] -o [output file name] -cache [cache configuration] -LLCrepl [Replacement policy number]
+
+Where:
+
+    * # threads: 1 (single-core simulation) or 4 (four-core simulation)
+    * trace file name: path to one of the generated single-threaded traces
+    * trace mix file name: A trace file mix generated by including four single-threaded traces in the same file (see above)
+    * cache configuration: UL3:Cache_Size_In_KB:Line_Size:Associativity
+    * Replacement policy number: 0 for LRU, 1 for random, 2 for your contest algorithm 
+
+For example, to run a single-core simulation using the default cache configuration and the LRU replacement algorithm:
+
+	../bin/CMPsim.usetrace.64 -threads 1 -t ../traces/ls.out.trace.gz -o ls.stats -cache UL3:1024:64:16 -LLCrepl 0
+
+You can examine statistics from this run by opening ls.stats.gz
+
+To run a four-core simulation using the default cache configuration and the LRU replacement algorithm:
+
+	../bin/CMPsim.usetrace.64 -threads 4 -mix ../traces/mix_ls_cat.mix -cache UL3:4096:64:16 -autorewind 1 -icount 1 -o mix_ls_cat.stats -LLCrepl 0
+
+Note that "autorewind 1" is necessary to ensure that a fast application continues to give contention in the presence of slow applications (should the trace run out of instructions to provide)
+
+You can examine statistics from this simulation by opening mix_ls_cat.stats.gz
+
+Writing Your Own Replacement Algorithm:
+
+In your CRC/src/LLCsim/ directory, there are two files you can modify: replacement_state.cpp and replacement_state.h.
+
+Only these two files should be submitted with your contest submission. All other files in that directory should not be modified.
+
