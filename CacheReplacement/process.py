@@ -8,9 +8,9 @@ t = result.readlines()
 result.close()
 
 g = open('readme.md', 'w')
-g.write('| **Program** | **LRU_time** | **Random_time** | **DRRIP_time** | \
-**LRU_CPI** | **Random_CPI** | **DRRIP_CPI** | \
-**LRU_miss** | **Random_miss** | **DRRIP_miss** |\n\
+g.write('| **Program** | **LRU_time** | **LRU_CPI** | **LRU_miss** | \
+**Random_time** | **Random_CPI** | **DRRIP_miss** | \
+**DRRIP_time** | **DRRIP_CPI** | **DRRIP_miss** |\n\
 | ----: | -------: | ----: | ----: | \
 -------: | ----: | ----: | \
 -------: | ----: | ----: |\n')

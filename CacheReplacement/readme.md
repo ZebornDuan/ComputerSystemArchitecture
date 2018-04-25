@@ -1,4 +1,4 @@
-| **Program** | **LRU_time** | **Random_time** | **DRRIP_time** | **LRU_CPI** | **Random_CPI** | **DRRIP_CPI** | **LRU_miss** | **Random_miss** | **DRRIP_miss** |
+| **Program** | **LRU_time** | **LRU_CPI** | **LRU_miss** | **Random_time** | **Random_CPI** | **DRRIP_miss** | **DRRIP_time** | **DRRIP_CPI** | **DRRIP_miss** |
 | ----: | -------: | ----: | ----: | -------: | ----: | ----: | -------: | ----: | ----: |
 | perlbench | 35.29 | 0.642823 | 40.7952 | 37.06 | 0.665731 | 44.4057 | 36.47 | 0.649961 | 41.9563 |
 | bzip2 | 244.21 | 0.554642 | 61.7369 | 149.02 | 0.561004 | 61.6783 | 176.19 | 0.555696 | 61.1119 |
