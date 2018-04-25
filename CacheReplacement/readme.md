@@ -2,8 +2,15 @@
 
 ## 运行环境搭建
 
+实验内容部分来自[Cache Replacement Championship](https://www.jilp.org/jwac-1/)。实验采用该赛事提供的模拟器来运行和测试Cache替换算法。模拟器的使用参考提供的文档`./bin/README`。运行模拟器需要较低版本的OS 内核。目前已知模拟器可以在 Ubuntu 10.04 运行，不
+能在 Ubuntu 14.04运行，其它系统对模拟器的支持情况还不清楚。Ubuntu 10.04 的虚拟机配置参考
+`Vagrantfile`。
 
+本次实验的运行环境为Ubuntu 10.04 VMWare虚拟机，可从链接获取配置好运行环境的虚拟机，提取码为：。虚拟机root用户的口令为dcx0812。由于虚拟机文件过大，采用分卷压缩形式提供，下载后请解压Ubuntu10.04.zip，并在VMWare中打开虚拟机。
 
+## DRRIP算法实现
+
+模拟器在./src/LLCsim/replacement_state.h 和replacement_state.cpp文件中默认实现了LRU和Random替换策略。本次实验另外了DRRIP替换算法。
 
 ## 运行结果
 
