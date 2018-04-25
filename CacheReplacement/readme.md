@@ -1,3 +1,12 @@
+# Cache替换算法
+
+## 运行环境搭建
+
+
+
+
+## 运行结果
+
 | **Program** | **LRU_time** | **LRU_CPI** | **LRU_miss** | **Random_time** | **Random_CPI** | **Random_miss** | **DRRIP_time** | **DRRIP_CPI** | **DRRIP_miss** | **least_time** | **least_CPI** | **least_miss** |
 | ----: | -------: | ----: | ----: | -------: | ----: | ----: | -------: | ----: | ----: | -------: | ----: | ----: |
 | perlbench | 35.29 | 0.642823 | 40.7952 | 37.06 | 0.665731 | 44.4057 | 36.47 | 0.649961 | 41.9563 | LRU | LRU | LRU |
