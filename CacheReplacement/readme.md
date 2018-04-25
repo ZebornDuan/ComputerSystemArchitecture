@@ -2,15 +2,29 @@
 
 ## 运行环境搭建
 
-实验内容部分来自[Cache Replacement Championship](https://www.jilp.org/jwac-1/)。实验采用该赛事提供的模拟器来运行和测试Cache替换算法。模拟器的使用参考提供的文档`./bin/README`。运行模拟器需要较低版本的OS 内核。目前已知模拟器可以在 Ubuntu 10.04 运行，不
-能在 Ubuntu 14.04运行，其它系统对模拟器的支持情况还不清楚。Ubuntu 10.04 的虚拟机配置参考
-`Vagrantfile`。
-
-本次实验的运行环境为Ubuntu 10.04 VMWare虚拟机，可从链接获取配置好运行环境的虚拟机，提取码为：。虚拟机root用户的口令为dcx0812。由于虚拟机文件过大，采用分卷压缩形式提供，下载后请解压Ubuntu10.04.zip，并在VMWare中打开虚拟机。
+实验内容部分来自[Cache Replacement Championship](https://www.jilp.org/jwac-1/)。实验采用该赛事提供的模拟器来运行和测试Cache替换算法。模拟器的使用参考提供的文档`./bin/README`。运行模拟器需要较低版本的OS 内核。目前已知模拟器可以在 Ubuntu 10.04 运行，不能在 Ubuntu 14.04运行，其它系统对模拟器的支持情况还不清楚。Ubuntu 10.04 的虚拟机配置以及运行模拟器的依赖库参考`Vagrantfile`。
 
 ## DRRIP算法实现
 
-模拟器在./src/LLCsim/replacement_state.h 和replacement_state.cpp文件中默认实现了LRU和Random替换策略。本次实验另外了DRRIP替换算法。
+模拟器在./src/LLCsim/replacement_state.h 和replacement_state.cpp文件中默认实现了LRU和Random替换策略。本次实验另外了实现DRRIP替换算法。DRRIP算法来自给出的两篇paper。
+
+DRRIP策略在每一个cache行设置一个计数器来存储这些行的Re-Reference Interval Prediction (RRPV)值。RRIP值代表预测某一cache块被重新调用的次序。。在RRIP链的前端，表示该cache块很快会被再次调用， 而在RRIP链的后端则表示该cache块被再次调用的间隔会很久。DRRIP策略使用Set Dueling 机制在SRRIP策略和BRRIP策略之间动态选择一种更好地策略应用到下一次替换中， 以此来减少发生缺失的次数。
+
+1） SRRIP策略
+
+如果一个cache块间隔很久才会被调用， 那么就有可能引起cache的高缺失率，低cache的使用率。为了阻止那些再次调用间隔很久的cache块污染cache，SRRIP策略在每个cache块中使用M bits来存储该块的RRPV值。RRPV值会随着每个块被调用的频率动态变化。对于本实验，设置M的值为2。RRPV值等于 ‘0’ ， 说明该cache块最近被调用过， 而且预测处理器很快会再次调用该cache块； RRPV值等于 ‘3’，说明该cache块最近没有被调用过，而且处理器在短时间内不会再次调用该cache块；RRPV值等于 ‘1’ 或者‘2’时，说明该cache块会有较高的可能性被调用。在初始情况下，所有的cache块的RRPV值都等于‘3’。一旦cache命中，该cache块的RRPV值就被设置成‘0’；相反地，一旦cache发生缺失，SRRIP策略会选择再次调用间隔很久的cache块进行替换，首先查找RRPV值为‘3’的cache块进行替换，并将其RRPV值设置成‘2’，如果没有找到RRPV值为‘3’的cache块，就将所有cache块的RRPV值加1后再进行查找，直到找到RRPV值为‘3’的cache块。
+
+2） DRRIP策略
+
+为了避免cache冲突以及适应不同种类的工作集，BRRIP策略在低概率下将新cache块替换到RRPV值为 ‘2’ 的块，用参数ε来表示这个概率值，设定ε = 1/32，即在32次插入新行的情况下，有31次插入RRPV值为‘3’的位置，1次插入RRPV值为‘2’的位置。但是对于不存在cache冲突的存取模式，总是使用BRRIP策略是有害无益的。所以通过使用Set Dueling机制在SRRIP策略和BRRIP策略之间进行动态选择，基于历史信息选择发生较少缺失的策略应用到其他cache块。
+
+DRRIP根据策略选择器变量PS的值来选择策略。PS能够追踪SRRIP和BRRIP之间哪一个发生的缺失更少。如果SRRIP发生一次缺失，PS加1，相反地，如果BRRIP发生一次缺失，PS减1。PS的值能够指示哪一种策略发生更少的缺失。如果PS的值等于1，那么使用BRRIP策略，否则使用SRRIP策略。
+
+## 运行与测试
+
+运行build.sh将对/traces文件夹下的trace进行测试，测试结果输出在/runs文件夹下，可解压查看。测试文件可从[链接](https://pan.baidu.com/s/1Zg7iocMMJW4mfpkt6qogAA)获取, 提取码09f7。trace文件的生成以及运行时策略的选择参考/bins/README。
+
+除了测试程序给出的性能指标，测试时利用Linux下time命令记录每个程序的运行时间，在输出的real user sys中选用real作为运行时间的性能度量。实验中将time命令的结果重定向到result.out文件中，并采用process.py脚本对运行的输出结果做统计处理，process.py将各个程序在不同策略下的性能指标进行统计比较，以表格的形式输出到readme.md中，即在“运行结果”中看到的表格。
 
 ## 运行结果
 
@@ -45,3 +59,5 @@
 | sphinx3 | 162.89 | 0.445644 | 97.156 | 159.91 | 0.445665 | 97.262 | 159.32 | 0.445645 | 97.1648 | DRRIP | LRU | LRU |
 | xalancbmk | 165.05 | 0.414993 | 66.2759 | 163.66 | 0.420899 | 67.5795 | 165.49 | 0.413111 | 65.1721 | Random | DRRIP | DRRIP |
 | specrand | 94.08 | 0.336211 | 95.9373 | 96.11 | 0.336246 | 96.3212 | 93.17 | 0.336293 | 96.929 | DRRIP | LRU | LRU |
+
+从运行结果看出，DRRIP策略相比LRU策略在大部分程序中都在CPI和缺失率上有所提升，少数程序是LRU的性能较好。有几个程序在三种策略下的缺失率都较高，接近或达到了100%，对这些程序需要进行针对性的分析和设计。在运行时间这个指标上，不少程序出现了和CPI与缺失率上的不一致，这里的时间是由Linux下time命令给出的用户时间和系统时间之和，作为性能指标可能存在一些不稳定因素。
