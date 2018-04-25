@@ -24,7 +24,7 @@ for (i, file) in enumerate(glob.glob(os.getcwd().replace('\\', '/') + '/runs/*')
 		try:
 			g.write(' | ' + lines[-44].split(' ')[-7])
 		except:
-			g.write(lines[-39].split(' ')[-7])
+			g.write(' | ' + lines[-39].split(' ')[-7])
 		g.write(' | ' + lines[-6].split(' ')[-1])
 		# print(i)
 		# print(t[3 * i].replace('\n', '').split(' ')[-1])
